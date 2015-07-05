@@ -8,21 +8,18 @@ terminalProgramsList="$HOME/.dmenu-terminal"
 if [ -e "$websitesList" ]; then
    # use dmenu to ask the user to choose a website/program
    choice="$(
-    echo "$(
-      grep -v ^# "$websitesList"   | \
-      cut -d, -f2,3,4,5,6,7,8,9,10 | \
-      tr , "\n"                    | \
-      tr -d "[:blank:]"            | \
-      sort -r                      | \
-      uniq                         | \
-      tr -s "\n"                   | \
-      sort
-    )" \
-    "$(
-      # shellcheck disable=SC2012
-      ls /bin |
-      sort
-    )" | \
+    printf "%s\n%s" \
+    "$(grep -v ^# "$websitesList"   | \
+       cut -d, -f2,3,4,5,6,7,8,9,10 | \
+       tr , "\n"                    | \
+       tr -d "[:blank:]"            | \
+       sort -r                      | \
+       uniq                         | \
+       tr -s "\n"                   | \
+       sort)" \
+    "$(# shellcheck disable=SC2012
+       ls /bin | \
+       sort)" | \
     dmenu -i
   )"
 else

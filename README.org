@@ -1,41 +1,41 @@
 * dmenu-custom
-  Run programs and open websites with [[http://tools.suckless.org/dmenu/][dmenu]].
+  Run apps and search the web from [[http://tools.suckless.org/dmenu/][dmenu]]. for instance:
+  - Open a graphical app, like chromium (dmenu is usually used this way)
+  - Open a command-line app in a new terminal, like cmus
+  - Open a website like an app (in its own window without tabs or browser
+    chrome)
+  - Open a website normally (in a new tab)
 ** How does it work?
-   1. Show a list of programs (from =/bin=) with dmenu (like normal)
-      - Add website names from =~/.dmenu-web= (if that file exists)
-   2. After choosing a program:
-      1. If it's a website name, open Chromium without browser chrome
-         (tabs/buttons/etc)
-      2. If it's a program listed in =~/.dmenu-terminal=, open it in a terminal
-         with =urxvt -e $program=.
-      3. Otherwise, open it normally.
-** The format of =~/.dmenu-web=
-#+BEGIN_SRC
-# comments start with a # sign at the start of a line
-# url,keyword,optional-keyword
-https://github.com/,gh,github
-https://news.ycombinator.com/ , hackernews , hn
-#+END_SRC
-  Note: You can have multiple keywords per URL, but you /must/ specify at least
-  one.
-** The format of =~/.dmenu-terminal=
-   Separate full application names (the names of the binaries) with whitespace
-   characters.
-#+BEGIN_SRC
-# comments start with a # sign at the start of a line
-# there are three apps listed (spaces or newlines to separate them
-vim
-cmus tmux
-#+END_SRC
-** Hooking it up to XMonad
-  It's easy to run this from XMonad, here's how I do it:
+   - For graphical apps: lists apps found in =/bin=
+   - For cli apps: lists apps named in =~/.dmenu-terminal= (whitespace delimited)
+   - For websites: lists sites named in =~/.dmenu-web=. Format:
+     #+BEGIN_SRC
+     # comments start with a # sign at the start of a line
+     # url keyword optional-keyword (sites and keywords are newline-delimited, each URL should be followed by a comma, and then one or more keywords separated by commas)
+     https://github.com/ , gh , github
+     https://news.ycombinator.com/ , hackernews , hn
+     #+END_SRC
+     Note: You can have multiple keywords per URL, but you /must/ specify at
+     least one.
+     - When opening a website, the following is taken into account:
+       - If you set =$BROWSER= to either =firefox= or =chromium=, that is used.
+       - If you /only/ have =firefox= or =chromium= installed, that is used.
+       - If you pass =--new-window= or =-w= to this script, then the website is
+         opened in its own window, otherwise it's opened in an existing window.
+** Window manager support
+*** XMonad
 #+BEGIN_SRC haskell
 import XMonad
 import XMonad.Util.EZConfig
 
 main = xmonad $ defaultConfig
         `additionalKeysP`
-        [ ("M-p" , spawn '"$HOME/.bin/dmenu-custom"') ]
+        -- Override the default application launcher
+        [ ("M-p" , spawn '"$HOME/.bin/dmenu-custom"')
+        -- Use Mod-Shift-p to open websites in new windows
+        , ("M-S-p" , spawn "$HOME/.bin/dmenu-custom --new-window")
+        ]
+
 #+END_SRC
 ** See also
    This is based off of (and replaces) [[https://github.com/losingkeys/dmenu-terminal][dmenu-terminal]] and [[https://github.com/losingkeys/dmenu-web][dmenu-web]].

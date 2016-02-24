@@ -2,6 +2,10 @@
 
 # this script can be found at https://github.com/losingkeys/dmenu-custom
 
+if [ "$1" = "-w" -o "$1" = "--new-window" ]; then
+  newWindow=true
+fi
+
 websitesList="$HOME/.dmenu-web"
 terminalProgramsList="$HOME/.dmenu-terminal"
 
@@ -41,8 +45,39 @@ url="$(
   tr -d "[:blank:]"
 )"
 
-if [ -n "$url" ]; then
-  exec chromium --app="$url"
+if [ "$url" ]; then
+  if [ "$BROWSER" ]; then
+    if [ "$BROWSER" = firefox ]; then
+      firefox=true
+    elif [ "$BROWSER" = chromium ]; then
+      chromium=true
+    fi
+  elif [ -x "$(command -v firefox)" ]; then
+    firefox=true
+  elif [ -x "$(command -v chromium)" ]; then
+    chromium=true
+  fi
+
+  if [ $firefox ]; then
+    if [ $newWindow ]; then
+      exec firefox -new-window "$url"
+    else
+      exec firefox "$url"
+    fi
+  elif [ $chromium ]; then
+    if [ $newWindow ]; then
+      exec chromium --app="$url"
+    else
+      exec chromium "$url"
+    fi
+  else
+    exec "$BROWSER" "$url"
+  fi
+
+  echo Error opening a browser. 2>&1
+  # shellcheck disable=2016
+  echo 'Please set "$BROWSER", or install firefox or chromium.' 2>&1
+  exit 1
 fi
 
 if [ -e "$terminalProgramsList" ]; then

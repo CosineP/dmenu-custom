@@ -9,33 +9,38 @@ fi
 websitesList="$HOME/.dmenu-web"
 terminalProgramsList="$HOME/.dmenu-terminal"
 
-if [ -e "$websitesList" ]; then
-   # use dmenu to ask the user to choose a website/program
-   choice="$(
-    printf "%s\n%s" \
-    "$(grep -v ^# "$websitesList"   | \
-       cut -d, -f2,3,4,5,6,7,8,9,10 | \
-       tr , "\n"                    | \
-       tr -d "[:blank:]"            | \
-       sort -r                      | \
-       uniq                         | \
-       tr -s "\n"                   | \
-       sort)" \
-    "$(# shellcheck disable=SC2012
-       ls /bin | \
-       sort)" | \
-    dmenu -i
-  )"
-else
-  # FIXME not sure how to do this with find
-  # (https://github.com/koalaman/shellcheck/wiki/Directive)
-  # shellcheck disable=SC2012
-  choice="$(ls /bin | dmenu -i)"
-fi
+launchHistory="$HOME/.dmenu-custom-history"
+# NOTE: creating the file with `touch' causes a problem replacing its first line
+# later (using sed) because there is no first line. That's why echo is used here
+test -s "$launchHistory" || echo > "$launchHistory"
+chmod 600 "$launchHistory"
 
-# blank input
-if [ -z "$(echo "$choice" | tr -d "[:blank:]")" ]; then
-  exit 0
+_get_launchable_websites() {
+  if [ -s "$websitesList" ]
+  then
+    grep -v ^# "$websitesList"     | \
+      cut -d, -f2,3,4,5,6,7,8,9,10 | \
+      tr , "\n"                    | \
+      tr -d "[:blank:]"            | \
+      sort -r                      | \
+      uniq                         | \
+      tr -s "\n"                   | \
+      sort
+  fi
+}
+
+_get_launchable_programs() {
+  ls /bin
+}
+
+# prompt the user to choose a site/program/program alias, showing the most recently launched first
+choice="$(printf "%s\n%s" "$(_get_launchable_websites)" "$(_get_launchable_programs)" | sort | uniq \
+          | cat - "$launchHistory" "$launchHistory" | sort | uniq -u | cat "$launchHistory" - \
+          | dmenu -i)"
+
+if [ -z "$(echo "$choice" | tr -d "[:blank:]")" ]
+then
+  exit
 fi
 
 url="$(
@@ -44,6 +49,18 @@ url="$(
   cut -d, -f1                            | \
   tr -d "[:blank:]"
 )"
+
+# get the first word of the launched app
+# this /should/ be the name of the app, but could possibly be an environment variable (TODO, handle this)
+# this'll be added to the launch history so it can be displayed first next time
+firstWordOfChoice="$(echo "$choice" | cut -d" " -f1)"
+
+# remove the choice from the history file,
+# and add it back in at the top (ordered by "most recently used")
+# thanks https://stackoverflow.com/questions/5410757/delete-lines-in-a-text-file-that-containing-a-specific-string
+sed -i "/^$firstWordOfChoice$/d" "$launchHistory"
+# thanks https://stackoverflow.com/questions/2503254/unix-prepending-a-file-without-a-dummy-file/8234805#8234805
+sed -i "1i$firstWordOfChoice" "$launchHistory"
 
 if [ "$url" ]; then
   if [ "$BROWSER" ]; then

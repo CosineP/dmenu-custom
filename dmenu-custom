@@ -36,7 +36,7 @@ _get_launchable_programs() {
 # prompt the user to choose a site/program/program alias, showing the most recently launched first
 choice="$(printf "%s\n%s" "$(_get_launchable_websites)" "$(_get_launchable_programs)" | sort | uniq \
           | cat - "$launchHistory" "$launchHistory" | sort | uniq -u | cat "$launchHistory" - \
-          | dmenu -i)"
+          | dmenu $DMENU_CUSTOM_OPTIONS)"
 
 if [ -z "$(echo "$choice" | tr -d "[:blank:]")" ]
 then

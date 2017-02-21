@@ -37,6 +37,29 @@ _get_launchable_programs() {
   fi
 }
 
+_first_exists() {
+  for i in "$@"; do
+    if [ -x "$(command -v -- $i)" ]; then
+      echo "$i"
+      break
+    fi
+  done
+}
+
+
+if [ "$#" -ne 1 -a -x "$(command -v -- "$1")" ]; then
+  terminal="$1"
+  shift
+else
+  terminal=$(_first_exists \
+    "$TERMINAL" \
+    "i3-sensible-terminal" \
+    "x-terminal-emulator" \
+    "urxvt" \
+    "xterm"
+  )
+fi
+
 # prompt the user to choose a site/program/program alias, showing the most recently launched first
 choice="$(printf "%s\n%s" "$(_get_launchable_websites)" "$(_get_launchable_programs)" | sort | uniq \
           | cat - "$launchHistory" "$launchHistory" | sort | uniq -u | cat "$launchHistory" - \
@@ -116,7 +139,7 @@ if [ -e "$terminalProgramsList" ]; then
   if [ -n "$terminalProgram" ]; then
     # allow word-splitting so arguments can be passed to programs
     # shellcheck disable=SC2086
-    exec urxvt -e $choice
+    exec $terminal -e $choice
   fi
 fi
 

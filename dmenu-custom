@@ -30,7 +30,11 @@ _get_launchable_websites() {
 }
 
 _get_launchable_programs() {
-  ls /bin
+  if [ -x "$(command -v dmenu_path)" ]; then
+    dmenu_path
+  else
+    ls /usr/bin
+  fi
 }
 
 # prompt the user to choose a site/program/program alias, showing the most recently launched first

@@ -128,21 +128,25 @@ if [ -e "$terminalProgramsList" ]; then
   # chop the choice up so you can pass arguments via dmenu
   # (e.g. mutt -R to open a mutt (mail program) in read-only mode)
   firstWordOfChoice="$(echo "$choice" | cut -d" " -f1)"
+  override=$(grep "$terminalProgramsList" -e $firstWordOfChoice)
+fi
 
-  terminalProgram="$(
-    grep -v "^#" "$terminalProgramsList" | \
-    tr -sc "[:alpha:]" "\n"              | \
-    grep "$firstWordOfChoice"            | \
-    tr -d "[:blank:]"
-  )"
-
-  if [ -n "$terminalProgram" ]; then
-    # allow word-splitting so arguments can be passed to programs
-    # shellcheck disable=SC2086
-    exec $terminal -e $choice
+# isxapp is 0 if console, 1 if graphical
+if [ -n "$override" ]; then
+  isxapp=$(echo "$override" | cut -d" " -f2)
+else
+  fullpath=$(command -v "$firstWordOfChoice")
+  # query ldd to guess if graphical if not otherwise defined
+  if [ -n "$(ldd "$fullpath" | grep libX11)" ]; then
+    isxapp="1"
+  else
+    isxapp="0"
   fi
 fi
 
-# allow word-splitting so arguments can be passed to programs
-# shellcheck disable=SC2086
-exec $choice
+if [ "0" != "$isxapp" ]; then
+  exec $choice
+else
+  exec $terminal -e $choice
+fi
+

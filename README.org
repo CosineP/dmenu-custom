@@ -6,8 +6,14 @@
     chrome)
   - Open a website normally (in a new tab)
 ** How does it work?
-   - For graphical apps: lists apps found in =/bin=
-   - For cli apps: lists apps named in =~/.dmenu-terminal= (whitespace delimited)
+   - Lists apps found in =$PATH=
+   - Attempts to guess whether graphical or terminal. If it makes a mistake, you can (make and) add an entry to =~/.dmenu-terminal=. Format:
+     #+BEGIN_SRC
+     app_name [0 for terminal, 1  for graphical]
+     app_two 0
+     app_three 1
+     Lines that don't contain an app name are ignored
+     #+END_SRC
    - For websites: lists sites named in =~/.dmenu-web=. Format:
      #+BEGIN_SRC
      # comments start with a # sign at the start of a line

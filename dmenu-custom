@@ -47,7 +47,7 @@ _first_exists() {
 }
 
 
-if [ "$#" -ne 1 -a -x "$(command -v -- "$1")" ]; then
+if [ "$#" -ge 1 -a -x "$(command -v -- "$1")" ]; then
   terminal="$1"
   shift
 else

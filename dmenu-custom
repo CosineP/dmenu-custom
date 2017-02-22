@@ -82,6 +82,11 @@ url="$(
 # this'll be added to the launch history so it can be displayed first next time
 firstWordOfChoice="$(echo "$choice" | cut -d" " -f1)"
 
+# checks if first word of choice includes a dot followed by exactly three characters (a TLD)
+if [ "$(echo "$firstWordOfChoice" | grep -e ".*\.\w\{3\}[^\w]*.*")" ]; then
+  url=$choice
+fi
+
 # remove the choice from the history file,
 # and add it back in at the top (ordered by "most recently used")
 # thanks https://stackoverflow.com/questions/5410757/delete-lines-in-a-text-file-that-containing-a-specific-string

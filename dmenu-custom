@@ -83,7 +83,7 @@ url="$(
 firstWordOfChoice="$(echo "$choice" | cut -d" " -f1)"
 
 # checks if first word of choice includes a dot followed by exactly three characters (a TLD)
-if [ "$(echo "$firstWordOfChoice" | grep -e ".*\.\w\{3\}[^\w]*.*")" ]; then
+if [ "$(echo "$firstWordOfChoice" | grep -e "\.[a-z]\{3\}\([^a-z]\|$\)")" ]; then
   url=$choice
 fi
 
